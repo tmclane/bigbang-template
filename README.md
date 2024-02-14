@@ -372,6 +372,56 @@ git commit -m "chore: added gitrepo creds secret and overlays"
 git push
 ```
 
+## Configure deployment to use OCI Signed BigBang and Verify Chart using Cosign
+
+The BigBang Chart is available to be deployed from either Git (GitRepository) or OCI Registry (HelmRepository). The [BigbBang Helm Chart](https://registry1.dso.mil/harbor/projects/133/repositories/bigbang/) is currently signed using Cosign. If using the HelmRepository then we have the ability to validated the chart using the [Public Key](https://repo1.dso.mil/big-bang/bigbang/-/blob/master/tests/oci-values.yaml?ref_type=heads#L11-14). To do this, we have to perform the following steps:
+
+1. Enable additional templates to be installed in the `/base/` using `base/kustomization.yaml`.
+
+    Update `base/kustomization.yaml` to enable/add `helmrepo.yaml` and `cosignsecret.yaml` under the `bases:` section:
+
+    ```
+    # When updating the version of BigBang, make sure to update
+    #   both the bases reference and the GitRepository reference
+    bases:
+    - https://repo1.dso.mil/platform-one/big-bang/bigbang.git//base?ref=2.19.2
+    - helmrepo.yaml
+    - cosignsecret.yaml
+    ```
+
+1. Enable override to the HelmRelease to use the HelmRepository by updating the `base/kustomization.yaml`:
+
+    ```
+    patchesStrategicMerge:
+    #Enable this section if you wish to use the OCI HelmRepo with Cosign Verfiy instead of the GitRepository.
+    - |-
+      apiVersion: helm.toolkit.fluxcd.io/v2beta2
+      kind: HelmRelease
+      metadata:
+        name: bigbang
+      spec:
+        interval: 1m
+        chart:
+          spec:
+            chart: bigbang
+            version: 2.19.2
+            sourceRef:
+              kind: HelmRepository
+              name: registry1
+            verify:
+              provider: cosign
+              secretRef:
+                name: bigbang-cosign-pub
+    ```
+
+1. During the deploy step, create a Docker secret in the `bigbang` namespace allowing Flux to pull the OCI chart. This command is defined below in Step 1 of the [Deploy](#deploy) section.
+
+1. Once pointed to the HelmRepository and it successfully pulling, each package within BigBang can then be pointed to their `helmRepo` sourceType value in BigBang eg:
+  ```yaml
+  istio:
+    sourceType: "helmRepo"
+  ```
+
 ## Deploy
 
 Big Bang follows a [GitOps](https://www.weave.works/blog/what-is-gitops-really) approach to deployment.  All configuration changes will be pulled and reconciled with what is stored in the Git repository.  The only exception to this is the initial manifests (e.g. `bigbang.yaml`) which points to the Git repository and path to start from.
@@ -391,7 +441,7 @@ Big Bang follows a [GitOps](https://www.weave.works/blog/what-is-gitops-really) 
    kubectl create namespace flux-system
 
    # Adding a space before this command keeps our PAT out of our history
-    kubectl create secret docker-registry private-registry --docker-server=registry1.dso.mil --docker-username=<Your IronBank Username> --docker-password=<Your IronBank Personal Access Token> -n flux-system
+   kubectl create secret docker-registry private-registry --docker-server=registry1.dso.mil --docker-username=<Your IronBank Username> --docker-password=<Your IronBank Personal Access Token> -n flux-system
    ```
 
 1. Create Git credentials for Flux
@@ -401,6 +451,14 @@ Big Bang follows a [GitOps](https://www.weave.works/blog/what-is-gitops-really) 
    # Adding a space before this command keeps our PAT out of our history
     kubectl create secret generic private-git --from-literal=username=<Your Repo1 Username> --from-literal=password=<Your Repo1 Personal Access Token> -n bigbang
    ```
+
+1. Optionally add Secret for OCI HelmRepository Deployment method
+   If you are using *HelmRepository* to validate the OCI Signed BigBang Chart instead of the *GitRepository*, create the `private-registry` secret to pull from the Helm Chart from the OCI repository defined in [/base/helmrepo.yaml](/base/helmrepo.yaml).
+
+    ```shell
+    # The private key is not stored in Git (and should NEVER be stored there).  We deploy it manually by exporting the key into a secret.
+    kubectl create secret docker-registry private-registry -n bigbang --docker-server=registry1.dso.mil --docker-username=<Your IronBank Username>--docker-password=<Your IronBank Personal Access Token>
+    ```
 
 1. Deploy Flux to handle syncing
 
