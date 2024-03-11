@@ -74,13 +74,13 @@ cd <your repo>
 git checkout -b template-demo
 
 # Copy one of the strategy directories into named-environment directories
-cp -r package-stategy/ dev
+cp -r package-strategy/ dev
 # update path - switch to gsed on MacOS
 sed -i 's/package-strategy/dev/g' dev/bigbang.yaml
 
 cp -r umbrella-strategy/ prod
 # update path - switch to gsed on MacOS
-sed -i 's/package-strategy/prod/g' prod/bigbang.yaml
+sed -i 's/umbrella-strategy/prod/g' prod/bigbang.yaml
 ```
 
 > It is recommended that you create your own branch so that you can [pull the original repository's `main` branch as a mirror](https://docs.gitlab.com/ee/user/project/repository/repository_mirroring.html) to keep it in sync.
@@ -384,7 +384,7 @@ The BigBang Chart is available to be deployed from either Git (GitRepository) or
     # When updating the version of BigBang, make sure to update
     #   both the bases reference and the GitRepository reference
     bases:
-    - https://repo1.dso.mil/platform-one/big-bang/bigbang.git//base?ref=2.19.2
+    - https://repo1.dso.mil/platform-one/big-bang/bigbang.git//base?ref=2.22.0
     - helmrepo.yaml
     - cosignsecret.yaml
     ```
@@ -404,7 +404,7 @@ The BigBang Chart is available to be deployed from either Git (GitRepository) or
         chart:
           spec:
             chart: bigbang
-            version: 2.19.2
+            version: 2.22.0
             sourceRef:
               kind: HelmRepository
               name: registry1
@@ -464,8 +464,8 @@ Big Bang follows a [GitOps](https://www.weave.works/blog/what-is-gitops-really) 
 
    ```shell
    # Flux is used to sync Git with the the cluster configuration
-   # If you are using a different version of Big Bang, make sure to update the `?ref=2.19.2` to the correct tag or branch.
-   kubectl apply -k https://repo1.dso.mil/platform-one/big-bang/bigbang.git//base/flux?ref=2.19.2
+   # If you are using a different version of Big Bang, make sure to update the `?ref=2.22.0` to the correct tag or branch.
+   kubectl apply -k https://repo1.dso.mil/platform-one/big-bang/bigbang.git//base/flux?ref=2.22.0
 
    # Wait for flux to complete
    kubectl get deploy -o name -n flux-system | xargs -n1 -t kubectl rollout status -n flux-system
@@ -542,7 +542,7 @@ To minimize the risk of an unexpected deployment of a BigBang release, the BigBa
 
   ```yaml
   bases:
-  - https://repo1.dso.mil/platform-one/big-bang/bigbang.git/base/?ref=2.19.2
+  - https://repo1.dso.mil/platform-one/big-bang/bigbang.git/base/?ref=2.22.0
   ```
 
 To update `dev/kustomization.yaml`, you would create a `mergePatch` like the following:
@@ -558,7 +558,7 @@ patchesStrategicMerge:
     interval: 1m
     ref:
       $patch: replace
-      tag: "2.19.2"
+      tag: "2.22.0"
 ```
 
 > This does not update the kustomize base, but it is unusual for that to change.
@@ -567,7 +567,7 @@ Then, commit your change:
 
 ```shell
    git add kustomization.yaml
-   git commit -m "feat(dev): update bigbang to 2.19.2"
+   git commit -m "feat(dev): update bigbang to 2.22.0"
    git push
 ```
 
