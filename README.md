@@ -45,12 +45,13 @@ In addition, the following items are recommended to assist with troubleshooting:
 ## Setup
 
 This template supports two distinct workflows for staying up-to-date with Big Bang:
+
 - `package-strategy` represents an environment that prioritizes the fastest path to receiving package updates as they are released from Big Bang development.
   - This update strategy keeps updates to the environment and Big Bang deployment small (i.e. a single package update at a time)
   - Allows for critical security patches to reach the environment as quickly as possible
   - This can be coupled with [renovate](https://docs.renovatebot.com/) (See the renovate section below) to automate the delivery of updates for an environment for each package as updates released.
-  - As a result of updating packages - Updates to Big Bang patch and/or minor releases may not end up modifying the environment. 
-- `umbrella-strategy` represents an environment that receives updates to all Big Bang packages exclusively from new releases of Big Bang. 
+  - As a result of updating packages - Updates to Big Bang patch and/or minor releases may not end up modifying the environment.
+- `umbrella-strategy` represents an environment that receives updates to all Big Bang packages exclusively from new releases of Big Bang.
   - This update strategy allows Big Bang development to test the integration of all packages in an end-to-end testing workflow to ensure backwards compatibility and/or any required integration has occurred.
   - It can deliver updates to many applications simultaneously with built-in dependency management for which updates occur first.
   - It ensures that any integration that needs to be managed at the Big Bang umbrella layer has occurred before package deployment.
@@ -58,7 +59,6 @@ This template supports two distinct workflows for staying up-to-date with Big Ba
 Each strategy consists of a Kubernetes manifest containing Flux resources (`bigbang.yaml`), a Kustomization file (`kustomization.yaml`), values to pass to Big Bang (`configmap.yaml`), secrets (`secrets.enc.yaml`), and additional files used to deploy resources.
 
 We recommend that you adopt a [multi environment workflow](#multi-environment-workflow) based off of one of these strategies. If following this path each environment can share a `base` folder to allow reusability of values between environments.
-
 
 ## Git Repository
 
@@ -87,21 +87,21 @@ sed -i 's/umbrella-strategy/prod/g' prod/bigbang.yaml
 
 ### Git Repository Best Practices
 
-* If you plan to deploy clusters to multiple impact levels, then you should follow these best practices:
-  * Have at least one unique git repository for each impact level where a cluster will be deployed to.
-  * Match the IL where the git repository will be hosted to the impact level where the corresponding cluster will be hosted.
-    * Example:
+- If you plan to deploy clusters to multiple impact levels, then you should follow these best practices:
+  - Have at least one unique git repository for each impact level where a cluster will be deployed to.
+  - Match the IL where the git repository will be hosted to the impact level where the corresponding cluster will be hosted.
+    - Example:
       The git repository corresponding to an IL4 Cluster Deployment should be hosted on an IL4 approved hosting environment.
       The Infrastructure as code for an IL4 Cluster Deployment shouldn't be hosted on an IL2 git repository.
-    * The reason for this is that:
-      * Infrastructure as code secrets corresponding to a cluster deployed to IL4 (or IL5), would be considered CUI (Controlled Unclassified Information), and thus should be isolated from IL2.
-      * Even though both IL2 and IL4 secrets would be encrypted, it's still best practice to keep them in separate repositories, because when server side git hooks are not in place, then it's possible for human error to result in a non-encrypted secrets being committed to a git repository.
-      * Any encrypted infrastructure as code secrets added to /base, would get shared by all clusters, if multiple impact levels existed in the same repo, then secrets added to /base could accidentally end up being shared across impact levels.
-* The intent of the /base folder is to allow configuration and in some cases secrets to be shared between clusters.
-  * Examples of how to properly use /base to share a secret between clusters in the same impact level.
-    * If you have several developer sandbox, development, and test clusters operating at IL2, you may wish to have some level of shared configuration between them.
-    * If you have a production and acceptance environment for an IL4 cluster, you may wish for them to share an image pull secret between them.
-* It's worth mentioning that while the above best practices are applicable to the majority of scenarios, Authorizing Officials(AOs) can always choose to make exceptions and accept risks if necessary to meet the needs of unique mission requirements, and the presence of a Cross Domain Solution could also result in nuances.
+    - The reason for this is that:
+      - Infrastructure as code secrets corresponding to a cluster deployed to IL4 (or IL5), would be considered CUI (Controlled Unclassified Information), and thus should be isolated from IL2.
+      - Even though both IL2 and IL4 secrets would be encrypted, it's still best practice to keep them in separate repositories, because when server side git hooks are not in place, then it's possible for human error to result in a non-encrypted secrets being committed to a git repository.
+      - Any encrypted infrastructure as code secrets added to /base, would get shared by all clusters, if multiple impact levels existed in the same repo, then secrets added to /base could accidentally end up being shared across impact levels.
+- The intent of the /base folder is to allow configuration and in some cases secrets to be shared between clusters.
+  - Examples of how to properly use /base to share a secret between clusters in the same impact level.
+    - If you have several developer sandbox, development, and test clusters operating at IL2, you may wish to have some level of shared configuration between them.
+    - If you have a production and acceptance environment for an IL4 cluster, you may wish for them to share an image pull secret between them.
+- It's worth mentioning that while the above best practices are applicable to the majority of scenarios, Authorizing Officials(AOs) can always choose to make exceptions and accept risks if necessary to meet the needs of unique mission requirements, and the presence of a Cross Domain Solution could also result in nuances.
 
 ### Create GPG Encryption Key
 
@@ -165,9 +165,9 @@ git push --set-upstream origin template-demo
 
 ### Sops Tip and Notes
 
-* `File Editing Tip:`
-  * Linux users: if you install Visual Studio Code or Sublime Text, the install process tends to add the binary to the $PATH, so linux users can easily edit files using `vi file_to_edit`, `subl file_to_edit`, or `code file_to_edit`
-  * Mac users: you can do the following to add the binary to your systems PATH variable to get the same functionality (zsh users adjust appropriately)
+- `File Editing Tip:`
+  - Linux users: if you install Visual Studio Code or Sublime Text, the install process tends to add the binary to the $PATH, so linux users can easily edit files using `vi file_to_edit`, `subl file_to_edit`, or `code file_to_edit`
+  - Mac users: you can do the following to add the binary to your systems PATH variable to get the same functionality (zsh users adjust appropriately)
 
     ```shell
     sudo ln -s "/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl" /usr/local/bin/subl
@@ -176,7 +176,7 @@ git push --set-upstream origin template-demo
     source ~/.bashrc
     ```
 
-* `Sops Tip:` You can edit a sops encrypted file with your preferred text editor.
+- `Sops Tip:` You can edit a sops encrypted file with your preferred text editor.
 
     ```shell
     # Note the following commands require .sops.yaml to have a valid gpg fingerprint configured
@@ -187,23 +187,23 @@ git push --set-upstream origin template-demo
     echo 'export EDITOR="subl --wait"' >> ~/.bashrc
     ```
 
-* `Sops Note`: [Sops isn't guaranteed to preserve the yaml formatting of a file it encrypts](https://github.com/mozilla/sops/issues/864)
-* `Sops Note`: sops is an abstraction layer that allows several secret backends to be used.
-  * AGE and GPG (also known as PGP) are generic cloud agnostic options that have no dependencies. It's important to note that while [the sops repo recommends AGE over PGP](https://github.com/mozilla/sops#22encrypting-using-age), For DoD use cases it's preferable to use GPG, because GPG offers NIST approved crypto algorithms. (AGE is just as secure as GPG; however, AGE's crypto algorithms, X25519 and ChaCha20-Poly1305 are not NIST approved algorithms ([X25519](https://en.wikipedia.org/wiki/Curve25519) is used to generate asymmetric key pairs and [ChaCha20-Poly1305](https://en.wikipedia.org/wiki/ChaCha20-Poly1305) is a symmetric encryption algorithm. The example above has GPG leverage RSA 4096 and AES 256 which are both NIST approved)
-  * GPG backed sops is shown as an example above, because it's generic and cloud agnostic.
-  * If possible Cloud Service Provider based Key Management Service based solutions like AWS KMS, GCP KMS, and Azure Key Vault should be preferred over GPG, for the following reasons:
-    * CSP KMS solutions are FIPS 140-2 approved
-    * KMS solutions leverage identity based decryption, since the service never exposes the key and does encryption / decryption operations on behalf of users, the decryption key can't leak.
-    * Identity based decryption means you can protect access to decryption rights using RBAC, and you can revoke access to the ability to decrypt data.
-    * CSP KMS solutions have easy to satisfy dependencies
-  * Hashicorp Vault is also a good option; however, it's worth pointing out that:
-    * Using Vault means introducing Vault as a dependency, and standing up a production grade instance of Vault requires a good amount of work.
-    * If a FIPS 140-2 compliant instance of Vault is needed, then Vault would need to be backed by an HSM, and that requires a Vault Enterprise License.
-  * If you want to leverage a KMS based solution, you'll need to update `.sops.yaml` based on the following links:
-    * [AWS KMS](https://github.com/mozilla/sops#27kms-aws-profiles)
-    * [GCP KMS](https://github.com/mozilla/sops#23encrypting-using-gcp-kms)
-    * [Azure Key Vault](https://github.com/mozilla/sops#24encrypting-using-azure-key-vault)
-    * [Hashicorp Vault](https://github.com/mozilla/sops#25encrypting-using-hashicorp-vault)
+- `Sops Note`: [Sops isn't guaranteed to preserve the yaml formatting of a file it encrypts](https://github.com/mozilla/sops/issues/864)
+- `Sops Note`: sops is an abstraction layer that allows several secret backends to be used.
+  - AGE and GPG (also known as PGP) are generic cloud agnostic options that have no dependencies. It's important to note that while [the sops repo recommends AGE over PGP](https://github.com/mozilla/sops#22encrypting-using-age), For DoD use cases it's preferable to use GPG, because GPG offers NIST approved crypto algorithms. (AGE is just as secure as GPG; however, AGE's crypto algorithms, X25519 and ChaCha20-Poly1305 are not NIST approved algorithms ([X25519](https://en.wikipedia.org/wiki/Curve25519) is used to generate asymmetric key pairs and [ChaCha20-Poly1305](https://en.wikipedia.org/wiki/ChaCha20-Poly1305) is a symmetric encryption algorithm. The example above has GPG leverage RSA 4096 and AES 256 which are both NIST approved)
+  - GPG backed sops is shown as an example above, because it's generic and cloud agnostic.
+  - If possible Cloud Service Provider based Key Management Service based solutions like AWS KMS, GCP KMS, and Azure Key Vault should be preferred over GPG, for the following reasons:
+    - CSP KMS solutions are FIPS 140-2 approved
+    - KMS solutions leverage identity based decryption, since the service never exposes the key and does encryption / decryption operations on behalf of users, the decryption key can't leak.
+    - Identity based decryption means you can protect access to decryption rights using RBAC, and you can revoke access to the ability to decrypt data.
+    - CSP KMS solutions have easy to satisfy dependencies
+  - Hashicorp Vault is also a good option; however, it's worth pointing out that:
+    - Using Vault means introducing Vault as a dependency, and standing up a production grade instance of Vault requires a good amount of work.
+    - If a FIPS 140-2 compliant instance of Vault is needed, then Vault would need to be backed by an HSM, and that requires a Vault Enterprise License.
+  - If you want to leverage a KMS based solution, you'll need to update `.sops.yaml` based on the following links:
+    - [AWS KMS](https://github.com/mozilla/sops#27kms-aws-profiles)
+    - [GCP KMS](https://github.com/mozilla/sops#23encrypting-using-gcp-kms)
+    - [Azure Key Vault](https://github.com/mozilla/sops#24encrypting-using-azure-key-vault)
+    - [Hashicorp Vault](https://github.com/mozilla/sops#25encrypting-using-hashicorp-vault)
 
 ### Add TLS Certificates
 
@@ -317,6 +317,7 @@ git push
 If you are in an airgap or high side environment and will need to be re-hosting BigBang packages and are not able to use SSH to have Fluxv2 pull the repos, you can still use HTTPS with a "self-signed" DoD certificate via configuring the following:
 
 Create a sops encrypted secret template within `prod/repo-ca-credentials.yaml.enc` :
+
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -329,9 +330,11 @@ stringData:
   caCert: |
     -------PEM ENCODED CERT--------
 ```
+
 Encrypt the secret with sops: `sops -e -i  prod/repo-ca-credentials.yaml.enc` .
 
 Ensure the above file is added to `prod/kustomization.yaml` under the `resources` section so it gets created in the bigbang namespace:
+
 ```yaml
 ...
 resources:
@@ -417,6 +420,7 @@ The BigBang Chart is available to be deployed from either Git (GitRepository) or
 1. During the deploy step, create a Docker secret in the `bigbang` namespace allowing Flux to pull the OCI chart. This command is defined below in Step 1 of the [Deploy](#deploy) section.
 
 1. Once pointed to the HelmRepository and it successfully pulling, each package within BigBang can then be pointed to their `helmRepo` sourceType value in BigBang eg:
+
   ```yaml
   istio:
     sourceType: "helmRepo"
@@ -453,7 +457,7 @@ Big Bang follows a [GitOps](https://www.weave.works/blog/what-is-gitops-really) 
    ```
 
 1. Optionally add Secret for OCI HelmRepository Deployment method
-   If you are using *HelmRepository* to validate the OCI Signed BigBang Chart instead of the *GitRepository*, create the `private-registry` secret to pull from the Helm Chart from the OCI repository defined in [/base/helmrepo.yaml](/base/helmrepo.yaml).
+   If you are using _HelmRepository_ to validate the OCI Signed BigBang Chart instead of the _GitRepository_, create the `private-registry` secret to pull from the Helm Chart from the OCI repository defined in [/base/helmrepo.yaml](/base/helmrepo.yaml).
 
     ```shell
     # The private key is not stored in Git (and should NEVER be stored there).  We deploy it manually by exporting the key into a secret.
@@ -792,9 +796,10 @@ As documented in Big Bang, optimally the repository that maintains your GitOps s
 
 The [Renovate configuration](./renovate.json) in this repository provides an example that will target Repo1 git repositories for both individual packages as well the Big Bang umbrella chart and provide automated merge requests for updates. If following the `package-strategy` for consuming updates, Renovate will open pull/merge-requests on a per-package basis.
 
-The [Renovate Deployment](https://repo1.dso.mil/big-bang/bigbang/-/blob/master/docs/guides/renovate/deployment.md) documentation supports deploying Renovate on a Big Bang cluster that can monitor both this template as well as dependencies in other repositories as a generic capability. 
+The [Renovate Deployment](https://repo1.dso.mil/big-bang/bigbang/-/blob/master/docs/guides/renovate/deployment.md) documentation supports deploying Renovate on a Big Bang cluster that can monitor both this template as well as dependencies in other repositories as a generic capability.
 
 Once an environment directory has been created from a given strategy directory, the strategy directories can be omitted from renovate update by adding an `ignorePaths` option to the `renovate.json`:
+
 ```
 "ignorePaths": ["package-strategy/**", "umbrella-strategy"],
 ```
