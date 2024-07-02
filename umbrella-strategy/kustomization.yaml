@@ -1,10 +1,14 @@
-bases:
+resources:
 - ../base
 configMapGenerator:
   - name: environment
     behavior: merge
     files:
       - values.yaml=configmap.yaml
-## Comment out the next two lines below if a secrets.enc.yaml is created in this directory
-#patchesStrategicMerge:
-# - secrets.enc.yaml
+## Comment out the next size lines below if a secrets.enc.yaml is created in this directory
+# patches:
+# - path: secrets.enc.yaml
+#   target:
+#     version: v1
+#     kind: Secret
+#     name: common-bb
